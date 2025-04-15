@@ -1,38 +1,71 @@
+# ===========================
+# Build Artifacts
+# ===========================
 target/
-!.mvn/wrapper/maven-wrapper.jar
+logs/
+build/
+test-output/
+surefire-reports/
+dependency-reduced-pom.xml
+buildNumber.properties
+release.properties
+
+# Allow target folders in src (for weird IDE behavior)
 !**/src/main/**/target/
 !**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
 
-### IntelliJ IDEA ###
+# ===========================
+# Spring Boot
+# ===========================
+*.log
+*.db
+*.h2.db
+*.mv.db
+
+# ===========================
+# Maven Wrapper
+# ===========================
+!.mvn/wrapper/maven-wrapper.jar
+
+# ===========================
+# IntelliJ IDEA
+# ===========================
+.idea/
+*.iws
+*.iml
+*.ipr
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
-*.iws
-*.iml
-*.ipr
+.idea/workspace.xml
+.idea/usage.statistics.xml
+.idea/shelf/
 
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### NetBeans ###
+# ===========================
+# NetBeans
+# ===========================
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+# ===========================
+# Docker
+# ===========================
+*.env
+docker-compose.override.yml
+**/.docker/
 
-### Mac OS ###
+# ===========================
+# OS / Misc
+# ===========================
 .DS_Store
+Thumbs.db
+ehthumbs.db
+*.swp
+*.swo
+*~
