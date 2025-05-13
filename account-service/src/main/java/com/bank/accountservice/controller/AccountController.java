@@ -35,17 +35,12 @@ public class AccountController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createAccount(@Valid @RequestBody AccountDTO accountDTO) {
-        try {
-            Account account = accountMapper.accountDTOToAccount(accountDTO);
-            Account created = accountService.createAccount(account);
-            AccountDTO responseDTO = accountMapper.accountToAccountDTO(created);
-            return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<AccountDTO> createAccount(@Valid @RequestBody AccountDTO accountDTO) {
+        Account account = accountMapper.accountDTOToAccount(accountDTO);
+        Account created = accountService.createAccount(account);
+        AccountDTO responseDTO = accountMapper.accountToAccountDTO(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
-
 
     @GetMapping
     public ResponseEntity<List<AccountDTO>> getAllAccounts() {
@@ -59,75 +54,48 @@ public class AccountController {
         return accountService.getAccountById(id)
                 .map(accountMapper::accountToAccountDTO)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new IllegalArgumentException("Аккаунт с id " + id + " не найден"));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<AccountDTO> updateAccount(@PathVariable Long id, @RequestBody AccountDTO updatedDTO) {
-        try {
-            Account updatedAccount = accountMapper.accountDTOToAccount(updatedDTO);
-            Account savedAccount = accountService.updateAccount(id, updatedAccount);
-            AccountDTO responseDTO = accountMapper.accountToAccountDTO(savedAccount);
-            return ResponseEntity.ok(responseDTO);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Account updatedAccount = accountMapper.accountDTOToAccount(updatedDTO);
+        Account savedAccount = accountService.updateAccount(id, updatedAccount);
+        AccountDTO responseDTO = accountMapper.accountToAccountDTO(savedAccount);
+        return ResponseEntity.ok(responseDTO);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteAccount(@PathVariable Long id) {
-        try {
-            accountService.deleteAccount(id);
-            return ResponseEntity.noContent().build(); // HTTP 204 — всё удалилось успешно, без тела
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Аккаунт с id " + id + " не найден.");
-        }
+    public ResponseEntity<Void> deleteAccount(@PathVariable Long id) {
+        accountService.deleteAccount(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/deposit")
-    public ResponseEntity<?> deposit(@PathVariable Long id, @RequestParam BigDecimal amount) {
-        try {
-            Account updated = accountService.deposit(id, amount);
-            AccountDTO responseDTO = accountMapper.accountToAccountDTO(updated);
-            return ResponseEntity.ok(responseDTO);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<AccountDTO> deposit(@PathVariable Long id, @RequestParam BigDecimal amount) {
+        Account updated = accountService.deposit(id, amount);
+        AccountDTO responseDTO = accountMapper.accountToAccountDTO(updated);
+        return ResponseEntity.ok(responseDTO);
     }
-
 
     @PatchMapping("/{id}/withdraw")
-    public ResponseEntity<?> withdraw(@PathVariable Long id, @RequestParam BigDecimal amount) {
-        try {
-            Account updated = accountService.withdraw(id, amount);
-            AccountDTO responseDTO = accountMapper.accountToAccountDTO(updated);
-            return ResponseEntity.ok(responseDTO);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<AccountDTO> withdraw(@PathVariable Long id, @RequestParam BigDecimal amount) {
+        Account updated = accountService.withdraw(id, amount);
+        AccountDTO responseDTO = accountMapper.accountToAccountDTO(updated);
+        return ResponseEntity.ok(responseDTO);
     }
-
-
-
 
     @PatchMapping("/transfer")
     @Transactional
-    public ResponseEntity<?> transfer(
+    public ResponseEntity<TransferResponseDTO> transfer(
             @RequestParam Long fromAccountId,
             @RequestParam Long toAccountId,
             @RequestParam BigDecimal amount) {
-        try {
-            Account from = accountService.withdraw(fromAccountId, amount);
-            Account to = accountService.deposit(toAccountId, amount);
 
-            TransferResponseDTO response = responseFactory.create(from, to, amount);
+        Account from = accountService.withdraw(fromAccountId, amount);
+        Account to = accountService.deposit(toAccountId, amount);
 
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        TransferResponseDTO response = responseFactory.create(from, to, amount);
+        return ResponseEntity.ok(response);
     }
-
-
 }
