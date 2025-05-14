@@ -24,6 +24,7 @@
 
   <modules>
     <module>account-service</module>
+    <module>notification-service</module>
     <!-- Добавишь остальные модули позже -->
   </modules>
 
@@ -69,11 +70,6 @@
       <scope>test</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
-    </dependency>
 
   </dependencies>
 
