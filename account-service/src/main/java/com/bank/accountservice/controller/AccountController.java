@@ -2,9 +2,6 @@ package com.bank.accountservice.controller;
 
 import com.bank.accountservice.dto.AccountDTO;
 import com.bank.accountservice.dto.TransferResponseDTO;
-import com.bank.accountservice.factory.TransferResponseFactory;
-import com.bank.accountservice.mapper.AccountMapper;
-import com.bank.accountservice.model.Account;
 import com.bank.accountservice.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,47 +19,37 @@ import java.util.List;
 public class AccountController {
 
     private final AccountService accountService;
-    private final AccountMapper accountMapper;
-    private final TransferResponseFactory responseFactory;
 
     @Autowired
-    public AccountController(AccountService accountService,
-                             AccountMapper accountMapper,
-                             TransferResponseFactory responseFactory) {
+    public AccountController(AccountService accountService) {
         this.accountService = accountService;
-        this.accountMapper = accountMapper;
-        this.responseFactory = responseFactory;
     }
 
     @PostMapping
     public ResponseEntity<AccountDTO> createAccount(@Valid @RequestBody AccountDTO accountDTO) {
-        Account account = accountMapper.accountDTOToAccount(accountDTO);
-        Account created = accountService.createAccount(account);
-        AccountDTO responseDTO = accountMapper.accountToAccountDTO(created);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+        AccountDTO createdDTO = accountService.createAccount(accountDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdDTO);
+
     }
 
     @GetMapping
     public ResponseEntity<List<AccountDTO>> getAllAccounts() {
-        List<Account> accounts = accountService.getAllAccounts();
-        List<AccountDTO> dtoList = accountMapper.toDtoList(accounts);
+        List<AccountDTO> dtoList = accountService.getAllAccounts();
         return ResponseEntity.ok(dtoList);
+
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<AccountDTO> getAccountById(@PathVariable Long id) {
         return accountService.getAccountById(id)
-                .map(accountMapper::accountToAccountDTO)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new IllegalArgumentException("Аккаунт с id " + id + " не найден"));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<AccountDTO> updateAccount(@PathVariable Long id, @RequestBody AccountDTO updatedDTO) {
-        Account updatedAccount = accountMapper.accountDTOToAccount(updatedDTO);
-        Account savedAccount = accountService.updateAccount(id, updatedAccount);
-        AccountDTO responseDTO = accountMapper.accountToAccountDTO(savedAccount);
-        return ResponseEntity.ok(responseDTO);
+        AccountDTO updated = accountService.updateAccount(id, updatedDTO);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
@@ -73,16 +60,14 @@ public class AccountController {
 
     @PatchMapping("/{id}/deposit")
     public ResponseEntity<AccountDTO> deposit(@PathVariable Long id, @RequestParam BigDecimal amount) {
-        Account updated = accountService.deposit(id, amount);
-        AccountDTO responseDTO = accountMapper.accountToAccountDTO(updated);
-        return ResponseEntity.ok(responseDTO);
+        AccountDTO updated = accountService.deposit(id, amount);
+        return ResponseEntity.ok(updated);
     }
 
     @PatchMapping("/{id}/withdraw")
     public ResponseEntity<AccountDTO> withdraw(@PathVariable Long id, @RequestParam BigDecimal amount) {
-        Account updated = accountService.withdraw(id, amount);
-        AccountDTO responseDTO = accountMapper.accountToAccountDTO(updated);
-        return ResponseEntity.ok(responseDTO);
+        AccountDTO updated = accountService.withdraw(id, amount);
+        return ResponseEntity.ok(updated);
     }
 
     @PatchMapping("/transfer")
@@ -92,10 +77,8 @@ public class AccountController {
             @RequestParam Long toAccountId,
             @RequestParam BigDecimal amount) {
 
-        Account from = accountService.withdraw(fromAccountId, amount);
-        Account to = accountService.deposit(toAccountId, amount);
-
-        TransferResponseDTO response = responseFactory.create(from, to, amount);
-        return ResponseEntity.ok(response);
+        TransferResponseDTO responseDTO = accountService.transfer(fromAccountId, toAccountId, amount);
+        return ResponseEntity.ok(responseDTO);
     }
+
 }
